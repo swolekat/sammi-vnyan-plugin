@@ -1,4 +1,4 @@
-# sammi-vnyan-plugin
+# SAMMI Vnyan Plugin
 
 This is a plugin for [VNyan](https://suvidriel.itch.io/vnyan) to talk to [SAMMI](https://sammi.solutions/) If you need to go the other direction (SAMMI controlling vnyan) please check out the [VNyan SAMMI Extension](https://github.com/swolekat/vnyan-sammi-extension)
 
