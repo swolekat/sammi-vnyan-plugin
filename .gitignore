@@ -1,2 +1,6 @@
 .idea/
 .vs/
+SammiVnyanPlugin/bin
+unity/
+SammiVnyanPlugin/obj
+/SammiVnyanPlugin/obj
