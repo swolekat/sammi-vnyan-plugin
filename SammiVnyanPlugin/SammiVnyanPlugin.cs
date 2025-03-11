@@ -83,7 +83,30 @@ namespace SammiVnyanPlugin
                     httpRequest("POST", "http://localhost:9450/api", "{\"request\": \"triggerButton\", \"buttonID\":\"" + buttonId + "\"}");
 
                 }
-                catch (Exception e) {
+                catch (Exception e)
+                {
+                    Debug.LogError($"Error parsing expression: {e.Message}");
+                }
+
+                return;
+            }
+            if (triggerName == "SammiSetButtonVariable")
+            {
+                var buttonId = text1;
+                var variableName = text2;
+                var stringValue = text3;
+                var numberValue = value1;
+
+                try
+                {
+                    if (String.IsNullOrEmpty(stringValue)) {
+                        httpRequest("POST", "http://localhost:9450/api", "{\"request\": \"setVariable\", \"buttonID\":\"" + buttonId + "\", \"name\": \""+variableName+"\", \"value\":"+numberValue+"}");
+                        return;
+                    }
+                    httpRequest("POST", "http://localhost:9450/api", "{\"request\": \"setVariable\", \"buttonID\":\"" + buttonId + "\", \"name\": \"" + variableName + "\", \"value\":\"" + stringValue + "\"}");
+                }
+                catch (Exception e)
+                {
                     Debug.LogError($"Error parsing expression: {e.Message}");
                 }
 
