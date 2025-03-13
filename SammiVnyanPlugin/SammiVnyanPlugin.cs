@@ -3,6 +3,7 @@ using System.Text;
 using System.Net.Http;
 using UnityEngine;
 using System.Threading.Tasks;
+using UnityEngine.Networking;
 
 namespace SammiVnyanPlugin
 {
@@ -15,6 +16,7 @@ namespace SammiVnyanPlugin
             try
             {
                 VNyanInterface.VNyanInterface.VNyanTrigger.registerTriggerListener(this);
+                client.DefaultRequestHeaders.ExpectContinue = false;
             }
             catch (Exception e)
             {
@@ -22,51 +24,23 @@ namespace SammiVnyanPlugin
             }
         }
 
-        async Task<string> httpRequest(string Method, string URL, string Content)
+        void httpRequest(string Content)
         {
             try
             {
-                var jsonData = new StringContent(Content, Encoding.ASCII);
-                jsonData.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-                string Response = "";
-                int httpStatus = 0;
-
-                switch (Method)
-                {
-                    case "POST":
-                        var PostResult = await client.PostAsync(URL, jsonData);
-                        Response = PostResult.Content.ReadAsStringAsync().Result;
-                        httpStatus = ((int)PostResult.StatusCode);
-                        Console.WriteLine(PostResult.ToString());
-                        PostResult.Dispose();
-                        break;
-                    case "PUT":
-                        var PutResult = await client.PutAsync(URL, jsonData);
-                        Response = PutResult.Content.ReadAsStringAsync().Result;
-                        httpStatus = ((int)PutResult.StatusCode);
-                        PutResult.Dispose();
-                        break;
-                    case "GET":
-                        var GetResult = await client.GetAsync(URL);
-                        Response = GetResult.Content.ReadAsStringAsync().Result;
-                        httpStatus = ((int)GetResult.StatusCode);
-                        GetResult.Dispose();
-                        break;
-                    case "PATCH":
-                        var request = new HttpRequestMessage(new HttpMethod("PATCH"), URL);
-                        request.Content = jsonData;
-                        var PatchResult = await client.SendAsync(request);
-                        Response = PatchResult.Content.ReadAsStringAsync().Result;
-                        httpStatus = ((int)PatchResult.StatusCode);
-                        PatchResult.Dispose();
-                        break;
-                }
-                return Response;
+                //var jsonData = new StringContent(Content, Encoding.ASCII);
+                //jsonData.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+                var request = new UnityWebRequest("http://localhost:9450/api", "POST");
+                byte[] bodyRaw = Encoding.UTF8.GetBytes(Content);
+                request.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
+                request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+                request.SetRequestHeader("Content-Type", "application/json");
+                request.SendWebRequest();
+                //client.PostAsync(URL, jsonData);
             }
             catch (Exception e)
             {
                 Debug.LogError($"Error parsing expression: {e.Message}");
-                return "";
             }
         }
 
@@ -80,7 +54,7 @@ namespace SammiVnyanPlugin
 
                 try
                 {
-                    httpRequest("POST", "http://localhost:9450/api", "{\"request\": \"triggerButton\", \"buttonID\":\"" + buttonId + "\"}");
+                    httpRequest("{\"request\": \"triggerButton\", \"buttonID\":\"" + buttonId + "\"}");
 
                 }
                 catch (Exception e)
@@ -100,10 +74,10 @@ namespace SammiVnyanPlugin
                 try
                 {
                     if (String.IsNullOrEmpty(stringValue)) {
-                        httpRequest("POST", "http://localhost:9450/api", "{\"request\": \"setVariable\", \"buttonID\":\"" + buttonId + "\", \"name\": \""+variableName+"\", \"value\":"+numberValue+"}");
+                        httpRequest("{\"request\": \"setVariable\", \"buttonID\":\"" + buttonId + "\", \"name\": \""+variableName+"\", \"value\":"+numberValue+"}");
                         return;
                     }
-                    httpRequest("POST", "http://localhost:9450/api", "{\"request\": \"setVariable\", \"buttonID\":\"" + buttonId + "\", \"name\": \"" + variableName + "\", \"value\":\"" + stringValue + "\"}");
+                    httpRequest("{\"request\": \"setVariable\", \"buttonID\":\"" + buttonId + "\", \"name\": \"" + variableName + "\", \"value\":\"" + stringValue + "\"}");
                 }
                 catch (Exception e)
                 {
