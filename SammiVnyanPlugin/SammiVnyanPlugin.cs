@@ -1,22 +1,36 @@
 ﻿using System;
+using System.Reflection;
 using System.Text;
-using System.Net.Http;
 using UnityEngine;
-using System.Threading.Tasks;
 using UnityEngine.Networking;
+using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 namespace SammiVnyanPlugin
 {
-    public class SammiVnyanPlugin : MonoBehaviour, VNyanInterface.ITriggerHandler
+    public class SammiVnyanPlugin : MonoBehaviour, VNyanInterface.ITriggerHandler, VNyanInterface.IButtonClickedHandler
     {
-        private static HttpClient client = new HttpClient();
+        [FormerlySerializedAs("windowPrefab")] public GameObject aboutWindow;
+
+        private GameObject _aboutWindow;
 
         public void Awake()
         {
             try
             {
+                VNyanInterface.VNyanInterface.VNyanUI.registerPluginButton("SAMMI", this);
                 VNyanInterface.VNyanInterface.VNyanTrigger.registerTriggerListener(this);
-                client.DefaultRequestHeaders.ExpectContinue = false;
+
+                _aboutWindow = (GameObject)VNyanInterface.VNyanInterface.VNyanUI.instantiateUIPrefab(aboutWindow);
+
+                if (_aboutWindow != null)
+                {
+                    _aboutWindow.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+                    _aboutWindow.SetActive(false);
+
+                    _aboutWindow.transform.Find("Panel/Version").GetComponent<Text>().text =
+                        Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                }
             }
             catch (Exception e)
             {
@@ -24,19 +38,21 @@ namespace SammiVnyanPlugin
             }
         }
 
+        public void pluginButtonClicked()
+        {
+            Application.OpenURL("https://github.com/swolekat/sammi-vnyan-plugin");
+        }
+
         void httpRequest(string Content)
         {
             try
             {
-                //var jsonData = new StringContent(Content, Encoding.ASCII);
-                //jsonData.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
                 var request = new UnityWebRequest("http://localhost:9450/api", "POST");
                 byte[] bodyRaw = Encoding.UTF8.GetBytes(Content);
                 request.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
                 request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
                 request.SetRequestHeader("Content-Type", "application/json");
                 request.SendWebRequest();
-                //client.PostAsync(URL, jsonData);
             }
             catch (Exception e)
             {
